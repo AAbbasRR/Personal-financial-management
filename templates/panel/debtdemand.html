@@ -1,0 +1,441 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% load humanize %}
+{% load jalali_tags %}
+{% block title %}{% block title2 %}بدهی و طلب{% endblock %}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h5 class="text-center">
+                    بدهی
+                </h5>
+                <div class="card card-outline card-tabs card-primary">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="opened-tabs-debt-tab" data-toggle="pill" href="#opened-tabs-debt" role="tab" aria-controls="opened-tabs-debt" aria-selected="true">
+                                    جاری
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="closed-tabs-debt-tab" data-toggle="pill" href="#closed-tabs-debt" role="tab" aria-controls="closed-tabs-debt" aria-selected="false">
+                                    بایگانی
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="opened-tabs-debt" role="tabpanel" aria-labelledby="opened-tabs-debt-tab">
+                                {% for open_debt in debt_list.opened %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="info-box bg-light">
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">
+                                                        <span>
+                                                            {{ open_debt.person }}
+                                                        </span>
+                                                        <span>
+                                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if open_debt.description %}{{ open_debt.description }}{% else %}خالی{% endif %}"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            {{ open_debt.amount|intcomma:False }}
+                                                        </span>
+                                                        <span>
+                                                            {{ open_debt.get_jalali_start_date }}
+                                                        </span>
+                                                    </span>
+                                                    <hr/>
+                                                    <div class="info-box-footer">
+                                                        <form method="post" action="{% url 'DebtDemand:deletedebtdemand' open_debt.pk %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                حذف
+                                                            </button>
+                                                        </form>
+                                                        <a href="{% url 'DebtDemand:paymentdebtdemand' open_debt.pk %}" class="btn btn-success btn-sm">
+                                                            تسویه
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto mr-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-debt">
+                                    اضافه کردن
+                                </button>
+                            </div>
+                            <div class="tab-pane fade" id="closed-tabs-debt" role="tabpanel" aria-labelledby="closed-tabs-debt-tab">
+                                {% if debt_list.closed %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ دریافت</th>
+                                            <th>تاریخ تسویه</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for closed_debt in debt_list.closed %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ closed_debt.person }}</td>
+                                                <td>{{ closed_debt.amount|intcomma:False }}</td>
+                                                <td>{{ closed_debt.get_jalali_start_date }}</td>
+                                                <td>{{ closed_debt.get_jalali_end_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if closed_debt.description %}{{ closed_debt.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'DebtDemand:deletedebtdemand' closed_debt.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5 class="text-center">
+                    طلب
+                </h5>
+                <div class="card card-outline card-tabs card-primary">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="opened-tabs-demand-tab" data-toggle="pill" href="#opened-tabs-demand" role="tab" aria-controls="opened-tabs-demand" aria-selected="true">
+                                    جاری
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="closed-tabs-demand-tab" data-toggle="pill" href="#closed-tabs-demand" role="tab" aria-controls="closed-tabs-demand" aria-selected="false">
+                                    بایگانی
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="opened-tabs-demand" role="tabpanel" aria-labelledby="opened-tabs-demand-tab">
+                                {% for open_demand in demand_list.opened %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="info-box bg-light">
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">
+                                                        <span>
+                                                            {{ open_demand.person }}
+                                                        </span>
+                                                        <span>
+                                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if open_demand.description %}{{ open_demand.description }}{% else %}خالی{% endif %}"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            {{ open_demand.amount|intcomma:False }}
+                                                        </span>
+                                                        <span>
+                                                            {{ open_demand.get_jalali_start_date }}
+                                                        </span>
+                                                    </span>
+                                                    <hr/>
+                                                    <div class="info-box-footer">
+                                                        <form method="post" action="{% url 'DebtDemand:deletedebtdemand' open_demand.pk %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                حذف
+                                                            </button>
+                                                        </form>
+                                                        <a href="{% url 'DebtDemand:paymentdebtdemand' open_demand.pk %}" class="btn btn-success btn-sm">
+                                                            تسویه
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto mr-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-demand">
+                                    اضافه کردن
+                                </button>
+                            </div>
+                            <div class="tab-pane fade" id="closed-tabs-demand" role="tabpanel" aria-labelledby="closed-tabs-demand-tab">
+                                {% if demand_list.closed %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ پرداخت</th>
+                                            <th>تاریخ تسویه</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for closed_demand in demand_list.closed %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ closed_demand.person }}</td>
+                                                <td>{{ closed_demand.amount|intcomma:False }}</td>
+                                                <td>{{ closed_demand.get_jalali_start_date }}</td>
+                                                <td>{{ closed_demand.get_jalali_end_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if closed_demand.description %}{{ closed_demand.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'DebtDemand:deletedebtdemand' closed_demand.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-debt">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن بدهی</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="person" id="id_person" class="form-control" type="text" placeholder="نام شخص"/>
+                                    {% if form.person.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.person.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.start_date.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" id="id_type" value="DEB">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-demand">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن طلب</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="person" id="id_person" class="form-control" type="text" placeholder="نام شخص"/>
+                                    {% if form.person.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.person.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.start_date.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" id="id_type" value="DEM">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+{% endblock %}

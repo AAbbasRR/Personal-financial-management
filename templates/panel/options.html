@@ -1,0 +1,267 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% block title %}{% block title2 %}تنظیمات{% endblock %}{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <div class="card card-outline card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">اطلاع رسانی</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">اقساط</h3>
+                                        <div class="card-tools">
+                                            <form action="." method="post" id="form_installment">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="type" id="id_type" value="INS">
+                                                <div class="custom-control custom-switch custom-switch-on-success">
+                                                    <input type="checkbox" onchange="installment_create_delete(event)" class="custom-control-input" id="checkbox_installment" {% if notification_list.installment %}checked="checked"{% endif %}>
+                                                    <label class="custom-control-label cursor-pointer" for="checkbox_installment"></label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if notification_list.installment %}
+                                        <div class="card-body">
+                                            <form action="{% url 'Options:updatenotificationoption' notification_list.installment.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_time_notice">زمان اطلاع رسانی</label>
+                                                            <select name="time_notice" id="id_time_notice" class="form-control">
+                                                                {% for option in form.get_time_notice_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.installment.time_notice == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_notice_type">طریقه اطلاع رسانی</label>
+                                                            <select name="notice_type" id="id_notice_type" class="form-control">
+                                                                {% for option in form.get_notice_choices_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.installment.notice_type == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-outline-success">ذخیره</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">بدهی و طلب</h3>
+                                        <div class="card-tools">
+                                            <form action="." method="post" id="form_debtanddemand">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="type" id="id_type" value="DBM">
+                                                <div class="custom-control custom-switch custom-switch-on-success">
+                                                    <input type="checkbox" onchange="debtanddemand_create_delete(event)" class="custom-control-input" id="checkbox_debtanddemand" {% if notification_list.debtanddemand %}checked="checked"{% endif %}>
+                                                    <label class="custom-control-label cursor-pointer" for="checkbox_debtanddemand"></label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if notification_list.debtanddemand %}
+                                        <div class="card-body">
+                                            <form action="{% url 'Options:updatenotificationoption' notification_list.debtanddemand.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_time_notice">زمان اطلاع رسانی</label>
+                                                            <select name="time_notice" id="id_time_notice" class="form-control">
+                                                                {% for option in form.get_time_notice_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.debtanddemand.time_notice == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_notice_type">طریقه اطلاع رسانی</label>
+                                                            <select name="notice_type" id="id_notice_type" class="form-control">
+                                                                {% for option in form.get_notice_choices_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.debtanddemand.notice_type == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-outline-success">ذخیره</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">منبع خرج</h3>
+                                        <div class="card-tools">
+                                            <form action="." method="post" id="form_bill">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="type" id="id_type" value="BIL">
+                                                <div class="custom-control custom-switch custom-switch-on-success">
+                                                    <input type="checkbox" onchange="bill_create_delete(event)" class="custom-control-input" id="checkbox_bill" {% if notification_list.bill %}checked="checked"{% endif %}>
+                                                    <label class="custom-control-label cursor-pointer" for="checkbox_bill"></label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if notification_list.bill %}
+                                        <div class="card-body">
+                                            <form action="{% url 'Options:updatenotificationoption' notification_list.bill.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_time_notice">زمان اطلاع رسانی</label>
+                                                            <select name="time_notice" id="id_time_notice" class="form-control">
+                                                                {% for option in form.get_time_notice_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.bill.time_notice == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_notice_type">طریقه اطلاع رسانی</label>
+                                                            <select name="notice_type" id="id_notice_type" class="form-control">
+                                                                {% for option in form.get_notice_choices_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.bill.notice_type == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-outline-success">ذخیره</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">چک</h3>
+                                        <div class="card-tools">
+                                            <form action="." method="post" id="form_check">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="type" id="id_type" value="CHK">
+                                                <div class="custom-control custom-switch custom-switch-on-success">
+                                                    <input type="checkbox" onchange="check_create_delete(event)" class="custom-control-input" id="checkbox_check" {% if notification_list.check %}checked="checked"{% endif %}>
+                                                    <label class="custom-control-label cursor-pointer" for="checkbox_check"></label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if notification_list.check %}
+                                        <div class="card-body">
+                                            <form action="{% url 'Options:updatenotificationoption' notification_list.check.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_time_notice">زمان اطلاع رسانی</label>
+                                                            <select name="time_notice" id="id_time_notice" class="form-control">
+                                                                {% for option in form.get_time_notice_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.check.time_notice == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col">
+                                                        <div class="form-group">
+                                                            <label for="id_notice_type">طریقه اطلاع رسانی</label>
+                                                            <select name="notice_type" id="id_notice_type" class="form-control">
+                                                                {% for option in form.get_notice_choices_options %}
+                                                                    <option value="{{ option.0 }}" {% if notification_list.check.notice_type == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-outline-success">ذخیره</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        let installment_create_delete = (event) => {
+            let status = event.target.checked;
+            let form = document.getElementById("form_installment");
+            if (status === true) {
+                form.submit();
+            } else {
+                {% if notification_list.installment %}
+                    form.action = "{% url 'Options:deletenotificationoption' notification_list.installment.pk %}";
+                    form.submit();
+                {% endif %}
+            }
+        }
+        let debtanddemand_create_delete = (event) => {
+            let status = event.target.checked;
+            let form = document.getElementById("form_debtanddemand");
+            if (status === true) {
+                form.submit();
+            } else {
+                {% if notification_list.debtanddemand %}
+                    form.action = "{% url 'Options:deletenotificationoption' notification_list.debtanddemand.pk %}";
+                    form.submit();
+                {% endif %}
+            }
+        }
+        let check_create_delete = (event) => {
+            let status = event.target.checked;
+            let form = document.getElementById("form_check");
+            if (status === true) {
+                form.submit();
+            } else {
+                {% if notification_list.check %}
+                    form.action = "{% url 'Options:deletenotificationoption' notification_list.check.pk %}";
+                    form.submit();
+                {% endif %}
+            }
+        }
+        let bill_create_delete = (event) => {
+            let status = event.target.checked;
+            let form = document.getElementById("form_bill");
+            if (status === true) {
+                form.submit();
+            } else {
+                {% if notification_list.bill %}
+                    form.action = "{% url 'Options:deletenotificationoption' notification_list.bill.pk %}";
+                    form.submit();
+                {% endif %}
+            }
+        }
+    </script>
+{% endblock %}

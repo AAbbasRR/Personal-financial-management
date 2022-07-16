@@ -1,0 +1,113 @@
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
+    <meta name="author" content="Łukasz Holeczek">
+    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
+    <title>ثبت نام</title>
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Main styles for this application-->
+    <link rel="stylesheet" href="https://unpkg.com/@coreui/coreui/dist/css/coreui.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@coreui/icons@2.0.0-beta.3/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'registration/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'registration/css/fonts.css' %}">
+</head>
+<body class="c-app c-dark-theme flex-row align-items-center">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card-group shadow bg-light">
+                <!-------------- login container ----------------->
+                <div class="card py-5 px-4 page" id="round-mb">
+                    <div class="card-body">
+                        <form class="login100-form validate-form" method="post">
+                            {% csrf_token %}
+                            <h1 class="text-white mb-4 text-center">ثبت نام</h1>
+                            <div class="input-group mb-3">
+                                {{ form.email|add_class:"form-control form-input-my"|append_attr:"placeholder:ایمیل" }}
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text h-100">
+                                        <i class="cib-mail-ru"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="input-group mb-4">
+                                {{ form.password1|add_class:"form-control form-input-my"|append_attr:"placeholder:رمز عبور" }}
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text h-100">
+                                        <i class="cil-lock-locked"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.password1.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="input-group mb-4">
+                                {{ form.password2|add_class:"form-control form-input-my"|append_attr:"placeholder:تکرار رمز عبور" }}
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text h-100">
+                                        <i class="cil-lock-locked"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.password2.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-3 text-right">
+                                    <button class="btn btn-form-login px-4 login100-form-btn" type="submit">
+                                        ثبت نام
+                                    </button>
+                                </div>
+                                <div class="col text-center">
+                                    <a href="{% url "Profile:login" %}" class="btn btn-link">
+                                        حساب دارید؟ ورود
+                                    </a>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        {% if form.non_field_errors %}
+                                            <div class="field-errors">
+                                                {% for error in form.non_field_errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+                <!-------------- END login container ----------------->
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/@coreui/coreui/dist/js/coreui.bundle.min.js"></script>
+</body>
+</html>

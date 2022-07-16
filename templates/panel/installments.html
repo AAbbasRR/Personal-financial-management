@@ -1,0 +1,297 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% load my_tags %}
+{% load jalali_tags %}
+{% load humanize %}
+{% block title %}{% block title2 %}اقساط{% endblock %}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row mb-3 d-flex flex-row-reverse">
+            <div class="col-4">
+                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-installment">
+                    اضافه کردن
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card card-outline card-tabs card-primary">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="opened-tabs-installment-tab" data-toggle="pill" href="#opened-tabs-installment" role="tab" aria-controls="opened-tabs-installment" aria-selected="true">
+                                    جاری
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="closed-tabs-installment-tab" data-toggle="pill" href="#closed-tabs-installment" role="tab" aria-controls="closed-tabs-installment" aria-selected="false">
+                                    بایگانی
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="opened-tabs-installment" role="tabpanel" aria-labelledby="opened-tabs-installment-tab">
+                                {% for open_installment in opened_installments_list %}
+                                    {% if forloop.counter|modulo:3 == 1 %}
+                                        <div class="row">{% endif %}
+                                <div class="col-4">
+                                    <div class="info-box bg-light">
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">
+                                                <span>
+                                                    {{ open_installment.title }}
+                                                </span>
+                                                <span>
+                                                    {{ open_installment.get_type_display }}
+                                                </span>
+                                            </span>
+                                            <span class="info-box-number">
+                                                <span>
+                                                    {{ open_installment.amount|intcomma:False }}
+                                                </span>
+                                                <span>
+                                                    تاریخ شروع: {{ open_installment.get_jalali_start_date }}
+                                                </span>
+                                            </span>
+                                            <hr/>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-{% if open_installment.get_installment_payment_percent >= 70 %}success{% elif open_installment.get_installment_payment_percent <= 40 %}danger{% else %}warning{% endif %}" aria-valuenow="{{ open_installment.get_installment_payment_percent }}" aria-valuemin="0" aria-valuemax="100" role="progressbar" style="width: {{ open_installment.get_installment_payment_percent }}%"></div>
+                                            </div>
+                                            <span class="progress-description text-center">
+                                                {{ open_installment.get_installment_payment_percent }} درصد از کل مبلغ: {{ open_installment.get_total_amount|intcomma:False }}
+                                            </span>
+                                            <hr/>
+                                            <div class="info-box-footer">
+                                                <a href="{% url 'Installments:closeinstallments' open_installment.pk %}" class="btn btn-danger btn-sm">
+                                                    بستن
+                                                </a>
+                                                <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#modal-payment-installment-{{ open_installment.pk }}">
+                                                    پرداخت قسط
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if forloop.counter|modulo:3 == 0 or forloop.last %}</div>{% endif %}
+                                    <div class="modal fade" id="modal-payment-installment-{{ open_installment.pk }}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">تاریخچه تسویه های قسط {{ open_installment.title }}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    {% if open_installment.get_installment_payment_objects %}
+                                                        <table class="table table-striped">
+                                                            <tbody>
+                                                            {% for payment in open_installment.get_installment_payment_objects %}
+                                                                <tr>
+                                                                    <td>تاریخ: {{ payment.get_jalali_payment_data }}</td>
+                                                                    <td>زمان: {{ payment.get_jalali_payment_time }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    {% else %}
+                                                        <h6 class="text-center">
+                                                            خالی
+                                                        </h6>
+                                                    {% endif %}
+                                                    <div class="d-flex justify-content-between">
+                                                    <span>
+                                                        تعداد قسط باقی مانده
+                                                    </span>
+                                                        <span>
+                                                        {{ open_installment.get_payment_remaining_number }}
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer justify-content-between">
+                                                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                                                    <form action="{% url 'Installments:paymentinstallments' open_installment.pk %}" method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" value="{{ open_installment.pk }}" name="installment" id="id_installment">
+                                                        <button type="submit" class="btn btn-outline-success">پرداخت یک قسط</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="tab-pane fade" id="closed-tabs-installment" role="tabpanel" aria-labelledby="closed-tabs-installment-tab">
+                                {% if closed_installments_list %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>عنوان</th>
+                                            <th>کل مبلغ</th>
+                                            <th>وضعیت</th>
+                                            <th style="width: 25px;">درصد</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for closed_installment in closed_installments_list %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ closed_installment.title }}</td>
+                                                <td>{{ closed_installment.get_total_amount|intcomma:False }}</td>
+                                                <td>
+                                                    <div class="progress ">
+                                                        <div class="progress-bar bg-{% if closed_installment.get_installment_payment_percent >= 70 %}success{% elif closed_installment.get_installment_payment_percent <= 40 %}danger{% else %}warning{% endif %}" aria-valuenow="{{ closed_installment.get_installment_payment_percent }}" aria-valuemin="0" aria-valuemax="100" role="progressbar" style="width: {{ closed_installment.get_installment_payment_percent }}%"></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                        <span class="badge bg-{% if closed_installment.get_installment_payment_percent >= 70 %}success{% elif closed_installment.get_installment_payment_percent <= 40 %}danger{% else %}warning{% endif %}">
+                                            {{ closed_installment.get_installment_payment_percent }}%
+                                        </span>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'Installments:deleteinstallments' closed_installment.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-installment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن قسط جدید</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <input name="title" id="id_title" class="form-control" type="text" placeholder="عنوان قسط"/>
+                                    {% if form.title.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.title.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ قسط"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <input name="count" id="id_count" class="form-control" type="number" placeholder="تعداد قسط"/>
+                                    {% if form.count.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.count.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <select name="type" id="id_type" class="form-control">
+                                        <option value="" disabled selected>نوع قسط</option>
+                                        {% for option in form.get_type_options %}
+                                            <option value="{{ option.0 }}">{{ option.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.type.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.type.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="field-errors">
+                                        {% for error in form.start_date.errors %}
+                                            <span>
+                                            {{ error }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'panel/Base.html' %}
+{% block title %}{% block title2 %}داشبورد{% endblock %}{% endblock %}
+{% load humanize %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-4 col-12">
+                <div class="small-box bg-success">
+                    <div class="icon">
+                        <i class="ion ion-cash"></i>
+                    </div>
+                    <div class="inner">
+                        <h4>{% if cards.total_bill %}{{ cards.total_bill }}{% else %}0{% endif %}</h4>
+                        <p>تعداد منابع درآمد</p>
+                    </div>
+                    <a href="{% url 'Bill:listbills' %}" class="small-box-footer"><i class="fas fa-arrow-circle-left"></i> بیشتر</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-12">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h4>{% if cards.count_installments %}{{ cards.count_installments }}{% else %}0{% endif %}</h4>
+                        <p>تعداد اقساط جاری</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-calendar"></i>
+                    </div>
+                    <a href="{% url 'Installments:listinstallments' %}" class="small-box-footer"><i class="fas fa-arrow-circle-left"></i> بیشتر</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-12">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h4>{% if cards.total_saving %}{{ cards.total_saving|intcomma:False }}{% else %}0{% endif %}</h4>
+                        <p>مجموع پس انداز</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <a href="{% url 'Saving:listsaving' %}" class="small-box-footer"><i class="fas fa-arrow-circle-left"></i> بیشتر</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-8 col-12">
+                <div class="card card-tabs card-white">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="this-tabs-month-tab" data-toggle="pill" href="#this-tabs-month" role="tab" aria-controls="this-tabs-month" aria-selected="true">
+                                    همین ماه
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="this-tabs-week-tab" data-toggle="pill" href="#this-tabs-week" role="tab" aria-controls="this-tabs-week" aria-selected="false">
+                                    همین هفته
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="this-tabs-day-tab" data-toggle="pill" href="#this-tabs-day" role="tab" aria-controls="this-tabs-day" aria-selected="false">
+                                    امروز
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="this-tabs-month" role="tabpanel" aria-labelledby="this-tabs-month-tab">
+                                <p class="d-flex justify-content-between {% if factor.this_month.total > 0 %}text-suceeess{% elif factor.this_month.total < 0 %}danger{% endif %}">
+                                    <span>
+                                        کل:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_month.total }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.this_month.received > 0 %}text-success{% endif %}">
+                                    <span>
+                                        دریافتی:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_month.received }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.this_month.payment > 0 %}text-danger{% endif %}">
+                                    <span>
+                                        پرداختی:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_month.payment }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="tab-pane fade" id="this-tabs-week" role="tabpanel" aria-labelledby="this-tabs-week-tab">
+                                <p class="d-flex justify-content-between {% if factor.this_week.total > 0 %}text-suceeess{% elif factor.this_week.total < 0 %}danger{% endif %}">
+                                    <span>
+                                        کل:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_week.total }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.this_week.received > 0 %}text-success{% endif %}">
+                                    <span>
+                                        دریافتی:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_week.received }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.this_week.payment > 0 %}text-danger{% endif %}">
+                                    <span>
+                                        پرداختی:
+                                    </span>
+                                    <span>
+                                        {{ factor.this_week.payment }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="tab-pane fade" id="this-tabs-day" role="tabpanel" aria-labelledby="this-tabs-day-tab">
+                                <p class="d-flex justify-content-between {% if factor.today.total > 0 %}text-suceeess{% elif factor.today.total < 0 %}danger{% endif %}">
+                                    <span>
+                                        کل:
+                                    </span>
+                                    <span>
+                                        {{ factor.today.total }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.today.received > 0 %}text-success{% endif %}">
+                                    <span>
+                                        دریافتی:
+                                    </span>
+                                    <span>
+                                        {{ factor.today.received }}
+                                    </span>
+                                </p>
+                                <p class="d-flex justify-content-between {% if factor.today.payment > 0 %}text-danger{% endif %}">
+                                    <span>
+                                        پرداختی:
+                                    </span>
+                                    <span>
+                                        {{ factor.today.payment }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{% url 'Saving:listsaving' %}" class="small-box-footer"><i class="fas fa-arrow-circle-left"></i> تمام تراکنش ها</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-12">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title">Bar Chart</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-12">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Donut Chart</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="donutChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        $(function () {
+            var donutChartCanvas = $('#donutChart').get(0).getContext('2d')
+            var donutData = {
+                labels: [
+                    'Chrome',
+                    'IE',
+                    'FireFox',
+                    'Safari',
+                    'Opera',
+                    'Navigator',
+                ],
+                datasets: [
+                    {
+                        data: [700, 500, 400, 600, 300, 100],
+                        backgroundColor: ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de'],
+                    }
+                ]
+            }
+            var donutOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+            }
+            //Create pie or douhnut chart
+            // You can switch between pie and douhnut using the method below.
+            new Chart(donutChartCanvas, {
+                type: 'doughnut',
+                data: donutData,
+                options: donutOptions
+            })
+
+
+            var areaChartData = {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                datasets: [
+                    {
+                        label: 'Digital Goods',
+                        backgroundColor: 'rgba(60,141,188,0.9)',
+                        borderColor: 'rgba(60,141,188,0.8)',
+                        pointRadius: false,
+                        pointColor: '#3b8bba',
+                        pointStrokeColor: 'rgba(60,141,188,1)',
+                        pointHighlightFill: '#fff',
+                        pointHighlightStroke: 'rgba(60,141,188,1)',
+                        data: [28, 48, 40, 19, 86, 27, 90]
+                    },
+                    {
+                        label: 'Electronics',
+                        backgroundColor: 'rgba(210, 214, 222, 1)',
+                        borderColor: 'rgba(210, 214, 222, 1)',
+                        pointRadius: false,
+                        pointColor: 'rgba(210, 214, 222, 1)',
+                        pointStrokeColor: '#c1c7d1',
+                        pointHighlightFill: '#fff',
+                        pointHighlightStroke: 'rgba(220,220,220,1)',
+                        data: [65, 59, 80, 81, 56, 55, 40]
+                    },
+                ]
+            }
+
+            var areaChartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                legend: {
+                    display: false
+                },
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                        }
+                    }],
+                    yAxes: [{
+                        gridLines: {
+                            display: false,
+                        }
+                    }]
+                }
+            }
+            //-------------
+            //- BAR CHART -
+            //-------------
+            var barChartCanvas = $('#barChart').get(0).getContext('2d')
+            var barChartData = $.extend(true, {}, areaChartData)
+            var temp0 = areaChartData.datasets[0]
+            var temp1 = areaChartData.datasets[1]
+            barChartData.datasets[0] = temp1
+            barChartData.datasets[1] = temp0
+
+            var barChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                datasetFill: false
+            }
+
+            new Chart(barChartCanvas, {
+                type: 'bar',
+                data: barChartData,
+                options: barChartOptions
+            })
+        })
+    </script>
+{% endblock %}

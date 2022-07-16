@@ -1,0 +1,167 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% load jalali_tags %}
+{% block title %}{% block title2 %}تراکنش ها{% endblock %}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row mb-3 d-flex flex-row-reverse">
+            <div class="col-4">
+                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-transaction">
+                    اضافه کردن
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card card-outline card-primary">
+                    <div class="card-body">
+                        {% if transaction_list %}
+                            <div class="row">
+                                <div class="col text-center">نوع تراکنش</div>
+                                <div class="col text-center">مبلغ</div>
+                                <div class="col text-center">تاریخ</div>
+                                <div class="col text-center">زمان</div>
+                                <div class="col text-center">توضیحات</div>
+                            </div>
+                            {% for transaction in transaction_list %}
+                                <hr/>
+                                <div class="row mt-3 {% if transaction.condition == 'ADT' %}text-success{% else %}text-danger{% endif %}">
+                                    <div class="col text-center">{{ transaction.get_type_display }}</div>
+                                    <div class="col text-center">{{ transaction.amount }}{% if transaction.condition == 'ADT' %}+{% else %}-{% endif %}</div>
+                                    <div class="col text-center">{{ transaction.get_jalali_created_date }}</div>
+                                    <div class="col text-center">{{ transaction.get_jalali_created_time }}</div>
+                                    <div class="col text-center"><i class="cursor-pointer fas fa-info-circle text-dark" title="توضیحات: {% if transaction.description %}{{ transaction.description }}{% else %}خالی{% endif %}"></i></div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="row">
+                                <div class="col">
+                                    <h2 class="text-center">
+                                        خالی
+                                    </h2>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-transaction">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن تراکنش جدید</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <input type="hidden" name="type" id="id_type" value="MRE">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div id="created-date" class="col">
+                                <div class="form-group">
+                                    {{ form.created_date.0 }}
+                                    {% if form.created_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.created_date.errors %}
+                                                <span>
+                                                    {{ error }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div id="created-time" class="col">
+                                <div class="form-group">
+                                    {{ form.created_date.0 }}
+                                    {% if form.created_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.created_date.errors %}
+                                                <span>
+                                                    {{ error }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <select name="condition" id="id_condition" class="form-control">
+                                        <option value="" disabled selected>وضعیت</option>
+                                        {% for option in form.get_condition_options %}
+                                            <option value="{{ option.0 }}">{{ option.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.type.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.type.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+    <script>
+        $(document).ready(() => {
+            let date_field = document.getElementById("created-date");
+            date_field.getElementsByClassName("form-control")[1].remove()
+            let time_field = document.getElementById("created-time");
+            time_field.getElementsByClassName("jalali_date-date")[0].remove()
+        })
+    </script>
+{% endblock %}
