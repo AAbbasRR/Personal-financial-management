@@ -1,0 +1,132 @@
+*, body {
+    font-family: IRANSans;
+}
+
+.card {
+    background-color: #0a0b18 !important;
+    border-color: #0a0b18 !important;
+}
+
+.field-errors {
+    margin-top: 10px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: rgba(240, 0, 0, 0.8);
+}
+
+.field-errors span{
+    direction: rtl;
+    text-align: center;
+}
+
+
+.bg-detail, .btn-form {
+    background-color: #20a8d8 !important;
+    border-color: #20a8d8 !important;
+}
+
+.btn-yellow {
+    background-color: #20a8d8 !important;
+    border-color: #20a8d8 !important;
+    color: #fefefe !important;
+}
+
+.btn-yellow:hover {
+    background-color: #fefefe !important;
+    border-color: #fefefe !important;
+    color: #212121 !important;
+}
+
+.btn-form, .btn-form-login {
+    background-color: #fefefe !important;
+    border-color: #fefefe !important;
+    color: #212121 !important;
+}
+
+.btn-form-link {
+    color: #fefefe !important;
+}
+
+.btn-form-link-hov {
+    color: #20a8d8 !important;
+
+}
+
+.btn-form-link-hov:hover {
+    color: #fefefe !important;
+}
+
+.btn-form-login:hover {
+    background-color: #20a8d8 !important;
+    border-color: #0a0b18 !important;
+    color: #fefefe !important;
+}
+
+.btn-form:hover {
+    background-color: #000 !important;
+    border-color: #20a8d8 !important;
+    color: #fefefe !important;
+}
+
+.btn-form-link:hover {
+    color: #20a8d8 !important;
+}
+
+.rounded-left-my {
+    border-bottom-left-radius: 12px !important;
+    border-top-left-radius: 12px !important;
+}
+
+.rounded-right-my {
+    border-bottom-right-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+.align-main-login {
+    margin-top: 40px !important;
+    margin-bottom: 52px !important;
+}
+
+.align-main-signup {
+    margin-top: 100px !important;
+    margin-bottom: 94px !important;
+}
+
+@media (max-width: 991px) {
+    #round-mb {
+        border-radius: 12px !important;
+    }
+
+    .mb-register {
+        display: block !important;
+    }
+}
+
+.footer-my {
+    padding: .75rem 1.25rem;
+    border-top: 1px solid #181924 !important;
+    background-color: #20202a !important;
+}
+
+.c-dark-theme .form-control {
+    color: #e1e1e1 !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.c-dark-theme .input-group-text {
+    color: rgba(225, 225, 225, 0.5) !important;
+    background-color: #181924 !important;
+    border-color: #181924 !important;
+}
+
+.form-input-my::placeholder {
+    direction: rtl;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 1px 0.1rem rgba(32, 168, 216, .5) !important;
+}

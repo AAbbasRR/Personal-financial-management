@@ -1,0 +1,253 @@
+{% extends 'panel/Base.html' %}
+{% load my_tags %}
+{% load humanize %}
+{% block title %}{% block title2 %}پس انداز{% endblock %}{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row mb-3 d-flex flex-row-reverse">
+            <div class="col-4">
+                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-saving">
+                    اضافه کردن
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card card-outline card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">پس انداز</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for saving in saving_list %}
+                            {% if forloop.counter|modulo:3 == 1 %}
+                                <div class="row">
+                            {% endif %}
+                        <div class="col-4">
+                            <div class="info-box bg-light">
+                                <div class="info-box-content">
+                                    <span class="info-box-text">
+                                        <span>
+                                            {{ saving.name }}
+                                        </span>
+                                        <span>
+                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if saving.description %}{{ saving.description }}{% else %}خالی{% endif %}"></i>
+                                            <i class="cursor-pointer fas fa-file-alt mr-2" title="تاریخچه" data-toggle="modal" data-target="#modal-payment-log-{{ saving.pk }}"></i>
+                                        </span>
+                                    </span>
+                                    <span class="info-box-number">
+                                        <span>
+                                            تاریخ ایجاد:
+                                        </span>
+                                        <span>
+                                            {{ saving.get_created_date }}
+                                        </span>
+                                    </span>
+                                    <span class="info-box-number">
+                                        <span>
+                                            موجودی:
+                                        </span>
+                                        <span>
+                                            {{ saving.amount|intcomma:False }}
+                                        </span>
+                                    </span>
+                                    <hr/>
+                                    <div class="info-box-footer">
+                                        <form action="{% url 'Saving:deletesaving' saving.pk %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                حذف
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modal-create-saving-withdrawal-{{ saving.pk }}">
+                                            برداشت پول
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal-create-saving-deposit-{{ saving.pk }}">
+                                            واریز پول
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="modal-create-saving-deposit-{{ saving.pk }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">واریز به صندوق {{ saving.name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form method="post" action="{% url 'Saving:paymentesaving' saving.pk %}" enctype='multipart/form-data'>
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ واریزی"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="type" id="id_type" value="DEP">
+                                                </div>
+                                                <div class="modal-footer justify-content-between">
+                                                    <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                                                    <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="modal-create-saving-withdrawal-{{ saving.pk }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">برداشت از صندوق {{ saving.name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form method="post" action="{% url 'Saving:paymentesaving' saving.pk %}" enctype='multipart/form-data'>
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ برداشت"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="type" id="id_type" value="WID">
+                                                </div>
+                                                <div class="modal-footer justify-content-between">
+                                                    <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                                                    <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="modal-payment-log-{{ saving.pk }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">تاریخچه تراکنش های {{ saving.name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% if saving.get_payment_objects %}
+                                                    <table class="table table-striped">
+                                                        <tbody>
+                                                        {% for payment in saving.get_payment_objects %}
+                                                            <tr>
+                                                                <td>تاریخ: {{ payment.get_jalali_payment_data }}</td>
+                                                                <td>زمان: {{ payment.get_jalali_payment_time }}</td>
+                                                                <td class="text-{% if payment.type == "DEP" %}success{% else %}danger{% endif %}">مبلغ: {{ payment.amount|intcomma:False }}{% if payment.type == "DEP" %}+{% else %}-{% endif %}</td>
+                                                                <td><i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if payment.description %}{{ payment.description }}{% else %}خالی{% endif %}"></i></td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                {% else %}
+                                                    <h6 class="text-center">
+                                                        خالی
+                                                    </h6>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer justify-content-between">
+                                                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if forloop.counter|modulo:3 == 0 or forloop.last %}
+                            </div>
+                        {% endif %}
+                        {% empty %}
+                            <div class="row">
+                                <div class="col">
+                                    <h2 class="text-center">
+                                        خالی
+                                    </h2>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-saving">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن صندوق پس انداز</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="name" id="id_name" class="form-control" type="text" placeholder="نام صندوق"/>
+                                    {% if form.name.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.name.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

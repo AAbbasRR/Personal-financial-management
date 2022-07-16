@@ -1,0 +1,191 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% load my_tags %}
+{% load humanize %}
+{% load jalali_tags %}
+{% block title %}{% block title2 %}منبع خرج{% endblock %}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row mb-3 d-flex flex-row-reverse">
+            <div class="col-4">
+                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-bill">
+                    اضافه کردن
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card card-outline card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">منابع خرج</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for bill in bills_list %}
+                            {% if forloop.counter|modulo:3 == 1 %}
+                                <div class="row">
+                            {% endif %}
+                        <div class="col-4">
+                            <div class="info-box bg-light">
+                                <div class="info-box-content">
+                                    <span class="info-box-text">
+                                        <span>
+                                            {{ bill.name }}
+                                        </span>
+                                        <span>
+                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if bill.description %}{{ bill.description }}{% else %}خالی{% endif %}"></i>
+                                        </span>
+                                    </span>
+                                    <span class="info-box-number">
+                                        <span>
+                                            {{ bill.get_type_display }}
+                                        </span>
+                                        <span>
+                                            تاریخ دریافت: {{ bill.get_jalali_receive_date }}
+                                        </span>
+                                    </span>
+                                    <hr/>
+                                    <div class="info-box-footer">
+                                        <span>
+                                            {{ bill.amount|intcomma:False }}
+                                        </span>
+                                        <form action="{% url 'Bill:deletebill' bill.pk %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                حذف
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if forloop.counter|modulo:3 == 0 or forloop.last %}
+                            </div>
+                        {% endif %}
+                        {% empty %}
+                            <div class="row">
+                                <div class="col">
+                                    <h2 class="text-center">
+                                        خالی
+                                    </h2>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-bill">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن منبع خرج</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="name" id="id_name" class="form-control" type="text" placeholder="نام منبع"/>
+                                    {% if form.name.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.name.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    {{ form.receive_date }}
+                                    {% if form.receive_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.receive_date.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <select name="type" id="id_type" class="form-control">
+                                        <option value="" disabled selected>نوع منبع</option>
+                                        {% for option in form.get_type_options %}
+                                            <option value="{{ option.0 }}">{{ option.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.type.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.type.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+{% endblock %}

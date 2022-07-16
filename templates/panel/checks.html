@@ -1,0 +1,577 @@
+{% extends 'panel/Base.html' %}
+{% load static %}
+{% load humanize %}
+{% load jalali_tags %}
+{% block title %}{% block title2 %}چک ها{% endblock %}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h5 class="text-center">
+                    پرداختی
+                </h5>
+                <div class="card card-outline card-tabs card-primary">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="during-tabs-payment-tab" data-toggle="pill" href="#during-tabs-payment" role="tab" aria-controls="during-tabs-payment" aria-selected="true">
+                                    جاری
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="successful-tabs-payment-tab" data-toggle="pill" href="#successful-tabs-payment" role="tab" aria-controls="successful-tabs-payment" aria-selected="false">
+                                    وصول شده
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="failure-tabs-payment-tab" data-toggle="pill" href="#failure-tabs-payment" role="tab" aria-controls="failure-tabs-payment" aria-selected="false">
+                                    عدم وصول
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="during-tabs-payment" role="tabpanel" aria-labelledby="during-tabs-payment-tab">
+                                {% for payment_during in checks_payment_list.during %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="info-box bg-light">
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">
+                                                        <span>
+                                                            {{ payment_during.person }}
+                                                        </span>
+                                                        <span>
+                                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if payment_during.description %}{{ payment_during.description }}{% else %}خالی{% endif %}"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            مبلغ:
+                                                        </span>
+                                                        <span>
+                                                            {{ payment_during.amount|intcomma:False }}
+                                                            {{ payment_during.get_jalali_check_date }}
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            تاریخ:
+                                                        </span>
+                                                        <span>
+                                                            {{ payment_during.get_jalali_check_date }}
+                                                        </span>
+                                                    </span>
+                                                    <hr/>
+                                                    <div class="info-box-footer">
+                                                        <a href="{% url 'Check:setsuccesscheck' payment_during.pk %}" class="btn btn-success btn-sm">
+                                                            وصول شده
+                                                        </a>
+                                                        <a href="{% url 'Check:setfailurecheck' payment_during.pk %}" class="btn btn-danger btn-sm">
+                                                            عدم وصول
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto mr-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-payment">
+                                    اضافه کردن
+                                </button>
+                            </div>
+                            <div class="tab-pane fade" id="successful-tabs-payment" role="tabpanel" aria-labelledby="successful-tabs-payment-tab">
+                                {% if checks_payment_list.successful %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for payment_successful in checks_payment_list.successful %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ payment_successful.person }}</td>
+                                                <td>{{ payment_successful.amount|intcomma:False }}</td>
+                                                <td>{{ payment_successful.get_jalali_check_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if payment_successful.description %}{{ payment_successful.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'Check:deletecheck' payment_successful.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="tab-pane fade" id="failure-tabs-payment" role="tabpanel" aria-labelledby="failure-tabs-payment-tab">
+                                {% if checks_payment_list.failure %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for payment_failure in checks_payment_list.failure %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ payment_failure.person }}</td>
+                                                <td>{{ payment_failure.amount|intcomma:False }}</td>
+                                                <td>{{ payment_failure.get_jalali_check_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if payment_failure.description %}{{ payment_failure.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'Check:deletecheck' payment_failure.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5 class="text-center">
+                    دریافتی
+                </h5>
+                <div class="card card-outline card-tabs card-primary">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="during-tabs-received-tab" data-toggle="pill" href="#during-tabs-received" role="tab" aria-controls="during-tabs-received" aria-selected="true">
+                                    جاری
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="successful-tabs-received-tab" data-toggle="pill" href="#successful-tabs-received" role="tab" aria-controls="successful-tabs-received" aria-selected="false">
+                                    وصول شده
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="failure-tabs-received-tab" data-toggle="pill" href="#failure-tabs-received" role="tab" aria-controls="failure-tabs-received" aria-selected="false">
+                                    عدم وصول
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="during-tabs-received" role="tabpanel" aria-labelledby="during-tabs-received-tab">
+                                {% for received_during in checks_received_list.during %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="info-box bg-light">
+                                                <div class="info-box-content">
+                                                    <span class="info-box-text">
+                                                        <span>
+                                                            {{ received_during.person }}
+                                                        </span>
+                                                        <span>
+                                                            <i class="cursor-pointer fas fa-info-circle" title="توضیحات: {% if received_during.description %}{{ received_during.description }}{% else %}خالی{% endif %}"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            مبلغ:
+                                                        </span>
+                                                        <span>
+                                                            {{ received_during.amount|intcomma:False }}
+                                                            {{ received_during.get_jalali_check_date }}
+                                                        </span>
+                                                    </span>
+                                                    <span class="info-box-number">
+                                                        <span>
+                                                            تاریخ:
+                                                        </span>
+                                                        <span>
+                                                            {{ received_during.get_jalali_check_date }}
+                                                        </span>
+                                                    </span>
+                                                    <hr/>
+                                                    <div class="info-box-footer">
+                                                        <a href="{% url 'Check:setsuccesscheck' received_during.pk %}" class="btn btn-success btn-sm">
+                                                            وصول شده
+                                                        </a>
+                                                        <a href="{% url 'Check:setfailurecheck' received_during.pk %}" class="btn btn-danger btn-sm">
+                                                            عدم وصول
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <button type="button" class="btn btn-block btn-sm btn-success mt-3 d-flex ml-auto mr-auto justify-content-center w-25" data-toggle="modal" data-target="#modal-create-receive">
+                                    اضافه کردن
+                                </button>
+                            </div>
+                            <div class="tab-pane fade" id="successful-tabs-received" role="tabpanel" aria-labelledby="successful-tabs-received-tab">
+                                {% if checks_received_list.successful %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for received_successful in checks_received_list.successful %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ received_successful.person }}</td>
+                                                <td>{{ received_successful.amount|intcomma:False }}</td>
+                                                <td>{{ received_successful.get_jalali_check_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if received_successful.description %}{{ received_successful.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'Check:deletecheck' received_successful.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="tab-pane fade" id="failure-tabs-received" role="tabpanel" aria-labelledby="failure-tabs-received-tab">
+                                {% if checks_received_list.failure %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 10px;">#</th>
+                                            <th>نام شخص</th>
+                                            <th>مبلغ</th>
+                                            <th>تاریخ</th>
+                                            <th style="width: 25px;">توضیحات</th>
+                                            <th style="width: 25px;">اکشن</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for received_failure in checks_received_list.failure %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}.</td>
+                                                <td>{{ received_failure.person }}</td>
+                                                <td>{{ received_failure.amount|intcomma:False }}</td>
+                                                <td>{{ received_failure.get_jalali_check_date }}</td>
+                                                <td class="d-flex justify-content-center">
+                                                    <i class="cursor-pointer fas fa-info-circle" title="{% if received_failure.description %}{{ received_failure.description }}{% else %}خالی{% endif %}"></i>
+                                                </td>
+                                                <td>
+                                                    <form method="post" action="{% url 'Check:deletecheck' received_failure.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-block btn-xs btn-danger" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <h2 class="text-center">
+                                                خالی
+                                            </h2>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-receive">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن چک دریافتی</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="person" id="id_person" class="form-control" type="text" placeholder="نام شخص"/>
+                                    {% if form.person.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.person.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    {{ form.check_date }}
+                                    {% if form.check_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.check_date.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="check_number" id="id_check_number" class="form-control" type="text" placeholder="شماره چک"/>
+                                    {% if form.check_number.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.check_number.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" id="id_type" value="REC">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-create-payment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">اضافه کردن چک پرداختی</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="." enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="person" id="id_person" class="form-control" type="text" placeholder="نام شخص"/>
+                                    {% if form.person.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.person.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="amount" id="id_amount" class="form-control" type="text" placeholder="مبلغ"/>
+                                    {% if form.amount.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.amount.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    {{ form.check_date }}
+                                    {% if form.check_date.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.check_date.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <input name="check_number" id="id_check_number" class="form-control" type="text" placeholder="شماره چک"/>
+                                    {% if form.check_number.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.check_number.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" id="id_type" value="PAY">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <textarea name="description" id="id_description" class="form-control" rows="3" placeholder="توضیحات" style="height: 70px;"></textarea>
+                                    {% if form.description.errors %}
+                                        <div class="field-errors">
+                                            {% for error in form.description.errors %}
+                                                <span>
+                                            {{ error }}
+                                        </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="reset" class="btn btn-outline-danger" data-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-outline-success">اضافه کردن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
+{% endblock %}
