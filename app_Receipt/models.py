@@ -63,8 +63,9 @@ class Receipt(BaseAmount, BaseDescription):
         return datetime2jalali(self.payment_date_time).time()
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        receipt_object = super(Receipt, self).save(force_insert, force_update, using, update_fields)
         Transaction.objects.create(user=self.user, type="RCP", reference_id=self.id, condition="DET", amount=self.amount, description=self.description)
-        return super(Receipt, self).save(force_insert, force_update, using, update_fields)
+        return receipt_object
 
     def delete(self, using=None, keep_parents=False):
         Transaction.objects.create(user=self.user, type="RCP", reference_id=self.id, condition="ADT", amount=self.amount, description=self.description)

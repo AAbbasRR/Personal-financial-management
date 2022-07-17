@@ -68,6 +68,7 @@ class DebtAndDemand(BaseDescription, BaseAmount):
         return date2jalali(self.end_date)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        dbm_object = super(DebtAndDemand, self).save(force_insert, force_update, using, update_fields)
         if self.status == "OPN":
             if self.type == "DEB":
                 Transaction.objects.create(user=self.user, type="DBM", reference_id=self.id, condition="ADT", amount=self.amount, description=self.description)
@@ -78,7 +79,7 @@ class DebtAndDemand(BaseDescription, BaseAmount):
                 Transaction.objects.create(user=self.user, type="DBM", reference_id=self.id, condition="DET", amount=self.amount, description=self.description)
             else:
                 Transaction.objects.create(user=self.user, type="DBM", reference_id=self.id, condition="ADT", amount=self.amount, description=self.description)
-        return super(DebtAndDemand, self).save(force_insert, force_update, using, update_fields)
+        return dbm_object
 
     def delete(self, using=None, keep_parents=False):
         if self.status == "OPN":

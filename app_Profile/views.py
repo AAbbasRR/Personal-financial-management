@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
-from django.db.models import Sum, Count
+from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
+from django.db.models import Sum
+from django.utils import timezone
 from django.views.generic import ListView, UpdateView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -38,21 +40,31 @@ class DashboardView(LoginRequiredMixin, ListView):
             'count_installments': Installments.objects.filter(user=self.request.user, status="OPN").count(),
             'total_saving': Saving.objects.filter(user=self.request.user).aggregate(Sum('amount'))['amount__sum']
         }
+        today = timezone.now().date()
+
+        month_received = list(Transaction.objects.filter(user=self.request.user, condition='ADT', created_date__year=today.year).annotate(month=TruncMonth('created_date')).values('month').annotate(sum_amount=Sum('amount')).values('month', 'sum_amount'))[-1]
+        month_payment = list(Transaction.objects.filter(user=self.request.user, condition='DET', created_date__year=today.year).annotate(month=TruncMonth('created_date')).values('month').annotate(sum_amount=Sum('amount')).values('month', 'sum_amount'))[-1]
+
+        week_received = list(Transaction.objects.filter(user=self.request.user, condition='ADT', created_date__year=today.year).annotate(week=TruncWeek('created_date')).values('week').annotate(sum_amount=Sum('amount')).values('week', 'sum_amount'))[-1]
+        week_payment = list(Transaction.objects.filter(user=self.request.user, condition='DET', created_date__year=today.year).annotate(week=TruncWeek('created_date')).values('week').annotate(sum_amount=Sum('amount')).values('week', 'sum_amount'))[-1]
+
+        today_received = list(Transaction.objects.filter(user=self.request.user, condition='ADT', created_date__year=today.year, created_date__month=today.month, created_date__day=today.day).annotate(day=TruncDay('created_date')).values('day').annotate(sum_amount=Sum('amount')).values('sum_amount'))[-1]
+        today_payment = list(Transaction.objects.filter(user=self.request.user, condition='DET', created_date__year=today.year, created_date__month=today.month, created_date__day=today.day).annotate(day=TruncDay('created_date')).values('day').annotate(sum_amount=Sum('amount')).values('sum_amount'))[-1]
         context['factor'] = {
             "this_month": {
-                "total": 0,
-                "received": 0,
-                "payment": 0
+                "total": month_received['sum_amount'] - month_payment['sum_amount'],
+                "received": month_received['sum_amount'],
+                "payment": month_payment['sum_amount']
             },
             "this_week": {
-                "total": 0,
-                "received": 0,
-                "payment": 0
+                "total": week_received['sum_amount'] - week_payment['sum_amount'],
+                "received": week_received['sum_amount'],
+                "payment": week_payment['sum_amount']
             },
             "today": {
-                "total": 0,
-                "received": 0,
-                "payment": 0
+                "total": today_received['sum_amount'] - today_payment['sum_amount'],
+                "received": today_received['sum_amount'],
+                "payment": today_payment['sum_amount']
             }
         }
         return context
