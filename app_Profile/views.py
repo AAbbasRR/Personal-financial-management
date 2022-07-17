@@ -11,6 +11,7 @@ from . import forms
 from app_Installments.models import Installments
 from app_Saving.models import Saving
 from app_Bills.models import Bill
+from app_Transactions.models import Transaction
 
 User = get_user_model()
 
